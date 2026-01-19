@@ -9,80 +9,58 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&display=swap');
-        body { font-family: 'Noto Sans SC', sans-serif; background-color: #f8fafc; color: #1e293b; }
+        body { font-family: 'Noto Sans SC', sans-serif; background-color: #f8fafc; color: #1e293b; padding-top: 64px; }
         .tab-active { color: #2563eb; border-bottom: 3px solid #2563eb; font-weight: bold; }
         .admin-theme { background-color: #0c0a09 !important; color: #f8fafc !important; }
-        .card-hover:hover { transform: translateY(-4px); box-shadow: 0 10px 15px rgba(0,0,0,0.05); transition: all 0.3s; }
+        .card-hover:hover { transform: translateY(-4px); box-shadow: 0 10px 15px rgba(0,0,0,0.05); transition: 0.3s; }
     </style>
 </head>
-<body class="pt-16 pb-20" id="main-body">
+<body id="main-body">
 
     <nav class="fixed top-0 w-full bg-white/95 backdrop-blur shadow-sm z-50 px-4 py-3 border-b border-gray-100" id="navbar">
         <div class="max-w-5xl mx-auto flex justify-between items-center">
-            <div class="flex items-center space-x-2 cursor-pointer" id="logo-entry" ondblclick="showLoginModal()">
+            <div class="flex items-center space-x-2 cursor-pointer" ondblclick="showLoginModal()">
                 <div class="bg-blue-600 p-2 rounded-lg text-white shadow-lg"><i class="fas fa-university"></i></div>
-                <span class="font-bold text-gray-800 text-lg" id="nav-title">智慧建言 <span class="text-blue-600 text-xs">V11.5 Final</span></span>
+                <span class="font-bold text-gray-800 text-lg" id="nav-title">智慧建言 <span class="text-blue-600 text-xs">V11.8-Fix</span></span>
             </div>
             <div id="user-nav" class="flex space-x-4 text-sm font-medium">
                 <button onclick="switchTab('public')" id="tab-public" class="pb-1 tab-active text-gray-800">公示中心</button>
                 <button onclick="switchTab('mine')" id="tab-mine" class="pb-1 text-gray-400">我的记录</button>
                 <button onclick="switchTab('submit')" id="tab-submit" class="pb-1 text-blue-600 font-bold bg-blue-50 px-3 py-1 rounded-full">写提案</button>
             </div>
-            <div id="admin-info" class="hidden flex items-center space-x-2">
-                <span id="current-user-tag" class="text-[10px] bg-red-100 text-red-600 px-2 py-1 rounded font-bold">超级管理员</span>
-                <button onclick="logoutAdmin()" class="text-gray-400 hover:text-red-500 text-sm"><i class="fas fa-sign-out-alt"></i></button>
-            </div>
+            <div id="admin-info" class="hidden"><button onclick="location.reload()" class="text-gray-400 text-sm">退出管理</button></div>
         </div>
     </nav>
 
     <main class="max-w-4xl mx-auto px-4 mt-8">
         <section id="section-public">
             <div class="bg-gradient-to-br from-blue-700 to-indigo-900 rounded-3xl p-8 text-white shadow-xl mb-8">
-                <h1 class="text-2xl font-bold mb-2 text-white">校园建言动态</h1>
-                <div class="relative mt-4">
-                    <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
-                    <input type="text" id="searchInput" oninput="renderAll()" placeholder="搜索公示中的摘要或标题..." class="w-full pl-12 pr-4 py-4 rounded-2xl text-gray-800 outline-none">
-                </div>
+                <h1 class="text-2xl font-bold mb-2">校园建言动态</h1>
+                <input type="text" id="searchInput" oninput="renderAll()" placeholder="搜索..." class="w-full p-4 rounded-2xl text-gray-800 mt-4 outline-none">
             </div>
-            <div id="public-list" class="grid grid-cols-1 md:grid-cols-2 gap-6"></div>
+            <div id="public-list" class="grid grid-cols-1 md:grid-cols-2 gap-6">正在加载云端数据...</div>
         </section>
 
         <section id="section-submit" class="hidden">
-            <div class="bg-white rounded-3xl shadow-xl p-8 text-gray-800">
-                <form id="proForm" class="space-y-6 text-sm" onsubmit="handleFormSubmit(event)">
-                    <div class="grid grid-cols-2 gap-4">
-                        <select id="userType" class="border rounded-xl p-4 bg-gray-50 outline-none" required>
-                            <option value="">年级/身份</option>
-                            <option>大一</option><option>大二</option><option>大三</option><option>大四</option><option>研究生</option>
-                        </select>
-                        <select id="targetDept" class="border rounded-xl p-4 bg-gray-50 outline-none" required>
-                            <option value="">受理分区</option>
-                            <option>生活权益部</option><option>学术科研部</option><option>文体发展部</option>
-                        </select>
-                    </div>
-                    <input type="tel" id="phone" class="w-full border rounded-xl p-4 bg-gray-50" placeholder="手机号" required>
-                    <input type="text" id="title" class="w-full border rounded-xl p-4 font-bold text-lg" placeholder="提案标题" required>
-                    <textarea id="issue" rows="3" class="w-full border rounded-xl p-4 bg-gray-50" placeholder="现状描述..." required></textarea>
-                    <textarea id="solution" rows="3" class="w-full border rounded-xl p-4 bg-gray-50" placeholder="建议方案..." required></textarea>
-                    <button type="submit" id="submitBtn" class="w-full bg-blue-600 text-white font-bold py-4 rounded-2xl shadow-lg active:scale-95 transition">提交并同步云端</button>
-                </form>
-            </div>
+            <form class="bg-white rounded-3xl shadow-xl p-8 space-y-4" onsubmit="handleFormSubmit(event)">
+                <div class="grid grid-cols-2 gap-4">
+                    <select id="userType" class="border rounded-xl p-4 bg-gray-50 text-gray-800"><option>大一</option><option>大二</option><option>大三</option><option>大四</option><option>研究生</option></select>
+                    <select id="targetDept" class="border rounded-xl p-4 bg-gray-50 text-gray-800"><option>生活权益部</option><option>学术科研部</option><option>文体发展部</option></select>
+                </div>
+                <input type="text" id="title" class="w-full border rounded-xl p-4 font-bold text-gray-800" placeholder="提案标题" required>
+                <textarea id="issue" rows="3" class="w-full border rounded-xl p-4 bg-gray-50 text-gray-800" placeholder="现状描述..." required></textarea>
+                <textarea id="solution" rows="3" class="w-full border rounded-xl p-4 bg-gray-50 text-gray-800" placeholder="建议方案..." required></textarea>
+                <button type="submit" id="submitBtn" class="w-full bg-blue-600 text-white font-bold py-4 rounded-2xl shadow-lg">提交到云端</button>
+            </form>
         </section>
 
-        <section id="section-mine" class="hidden space-y-4 text-gray-800"><div id="mine-list"></div></section>
+        <section id="section-mine" class="hidden space-y-4"><div id="mine-list" class="text-gray-800"></div></section>
 
-        <section id="section-admin" class="hidden space-y-6">
-            <div id="admin-list" class="space-y-6"></div>
-        </section>
+        <section id="section-admin" class="hidden space-y-6"><div id="admin-list"></div></section>
     </main>
 
     <div id="login-modal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 z-[100]">
-        <div class="bg-white rounded-3xl p-8 max-w-sm w-full text-gray-800 shadow-2xl">
-            <h4 class="text-xl font-bold mb-6 text-center italic">身份核验</h4>
-            <input type="password" id="admin-pass" class="w-full border border-gray-200 rounded-xl p-4 mb-4 text-center tracking-widest outline-none" placeholder="输入密码">
-            <button onclick="loginAdmin()" class="w-full bg-red-600 text-white py-4 rounded-xl font-bold">验证身份</button>
-            <button onclick="hideLoginModal()" class="w-full mt-2 text-gray-400 text-xs text-center block">取消</button>
-        </div>
+        <div class="bg-white rounded-3xl p-8 max-w-sm w-full text-gray-800"><input type="password" id="admin-pass" class="w-full border p-4 mb-4 text-center rounded-xl" placeholder="暗号"><button onclick="loginAdmin()" class="w-full bg-red-600 text-white py-4 rounded-xl font-bold">验证</button></div>
     </div>
 
     <script>
@@ -95,90 +73,72 @@
         async function fetchData() {
             const { data, error } = await _supabase.from('feedbacks').select('*').order('created_at', { ascending: false });
             if (data) { globalData = data; renderAll(); }
+            if (error) console.error("读取错误:", error);
         }
 
         async function handleFormSubmit(e) {
             e.preventDefault();
             const btn = document.getElementById('submitBtn');
-            btn.innerText = "同步中..."; btn.disabled = true;
-            const { error } = await _supabase.from('feedbacks').insert([{
+            btn.innerText = "上传中..."; btn.disabled = true;
+            const payload = {
                 title: document.getElementById('title').value,
                 userType: document.getElementById('userType').value,
                 dept: document.getElementById('targetDept').value,
-                phone: document.getElementById('phone').value,
                 issue: document.getElementById('issue').value,
                 solution: document.getElementById('solution').value,
-                status: '待审核', progress: 10
-            }]);
-            if (!error) { alert("提交成功！"); e.target.reset(); switchTab('mine'); fetchData(); }
-            btn.innerText = "提交并同步云端"; btn.disabled = false;
+                status: '待审核',
+                progress: 10
+            };
+            const { error } = await _supabase.from('feedbacks').insert([payload]);
+            if (error) { alert("提交失败: " + error.message); } 
+            else { alert("提交成功！"); e.target.reset(); switchTab('mine'); fetchData(); }
+            btn.innerText = "提交到云端"; btn.disabled = false;
         }
 
         function renderAll() {
             const pubList = document.getElementById('public-list');
             const mineList = document.getElementById('mine-list');
             const adminList = document.getElementById('admin-list');
-            const keyword = document.getElementById('searchInput').value.toLowerCase();
+            const kw = document.getElementById('searchInput').value.toLowerCase();
             
             pubList.innerHTML = ''; mineList.innerHTML = ''; adminList.innerHTML = '';
 
             globalData.forEach(item => {
-                // 1. 公示中心渲染 (逻辑：状态必须是'已公示'，且符合搜索关键词)
-                if(item.status === '已公示' && (item.title.toLowerCase().includes(keyword) || (item.summary && item.summary.toLowerCase().includes(keyword)))) {
-                    pubList.innerHTML += `
-                        <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 card-hover text-gray-800">
-                            <span class="text-blue-600 text-[10px] font-bold bg-blue-50 px-2 py-0.5 rounded">${item.dept}</span>
-                            <h4 class="text-sm font-bold my-2">${item.summary || item.title}</h4>
-                            <div class="w-full bg-gray-100 h-1 rounded-full overflow-hidden mb-2">
-                                <div class="bg-blue-600 h-full" style="width: ${item.progress}%"></div>
-                            </div>
-                            <p class="text-[10px] text-gray-500 italic">进展：${item.reply || '正在跟进'}</p>
-                        </div>`;
+                // 公示中心：仅公示 + 搜索过滤
+                if(item.status === '已公示' && (item.title.toLowerCase().includes(kw) || (item.summary && item.summary.toLowerCase().includes(kw)))) {
+                    pubList.innerHTML += `<div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 card-hover text-gray-800 mb-4">
+                        <span class="text-blue-600 text-[10px] font-bold bg-blue-50 px-2 py-0.5 rounded">${item.dept}</span>
+                        <h4 class="text-sm font-bold my-2">${item.summary || item.title}</h4>
+                        <p class="text-[10px] text-gray-500 italic">进展：${item.reply || '正在处理'}</p>
+                    </div>`;
                 }
-
-                // 2. 我的记录 (逻辑：可以看到所有，如果是驳回，显示红色意见)
-                mineList.innerHTML += `
-                    <div class="bg-white p-6 rounded-2xl border-l-4 ${item.status==='已驳回'?'border-red-500':'border-blue-600'} shadow-md mb-4 text-gray-800">
-                        <div class="flex justify-between font-bold text-xs"><span>${item.title}</span><span class="${item.status==='已驳回'?'text-red-500':'text-blue-600'}">${item.status}</span></div>
-                        <p class="text-[11px] text-gray-500 mt-2">${item.issue}</p>
-                        ${item.summary ? `<p class="mt-2 text-[10px] text-blue-600 font-bold">摘要：${item.summary}</p>` : ''}
-                        ${item.reply ? `<p class="mt-2 p-2 bg-blue-50 rounded-lg text-[10px] text-blue-800 border border-blue-100 italic">回复：${item.reply}</p>` : ''}
-                    </div>`;
-
-                // 3. 管理员后台 (逻辑：增加摘要输入框)
-                adminList.innerHTML += `
-                    <div class="bg-white/10 p-6 rounded-3xl border border-white/10 text-white shadow-xl mb-4">
-                        <div class="flex justify-between text-[10px] text-gray-400 mb-2">
-                            <span>${item.userType} | ${item.dept}</span>
-                            <span>${item.status}</span>
-                        </div>
-                        <h5 class="font-bold mb-3">${item.title}</h5>
-                        <input id="sum-${item.id}" class="w-full bg-black/40 border border-white/10 rounded-xl p-3 text-xs text-white mb-2 outline-none" placeholder="一句话摘要" value="${item.summary || ''}">
-                        <textarea id="rep-${item.id}" class="w-full bg-black/40 border border-white/10 rounded-xl p-3 text-xs text-white mb-3 outline-none" placeholder="回复或驳回意见...">${item.reply || ''}</textarea>
-                        <div class="flex gap-2">
-                            <button onclick="updateStatus('${item.id}', '已公示', 50)" class="flex-1 bg-blue-600 py-2 rounded-xl text-xs font-bold">公示通过</button>
-                            <button onclick="updateStatus('${item.id}', '已驳回', 0)" class="flex-1 bg-red-600 py-2 rounded-xl text-xs font-bold">驳回</button>
-                        </div>
-                    </div>`;
+                // 我的记录
+                mineList.innerHTML += `<div class="bg-white p-6 rounded-2xl border-l-4 ${item.status==='已驳回'?'border-red-500':'border-blue-600'} shadow-md mb-4">
+                    <div class="flex justify-between font-bold text-xs mb-2"><span>${item.title}</span><span class="text-blue-600">${item.status}</span></div>
+                    <p class="text-xs text-gray-500">${item.issue}</p>
+                    ${item.reply ? `<p class="mt-2 text-[10px] text-blue-700 bg-blue-50 p-2 rounded-lg italic">回复：${item.reply}</p>` : ''}
+                </div>`;
+                // 后台管理
+                adminList.innerHTML += `<div class="bg-white/10 p-6 rounded-3xl border border-white/10 text-white shadow-xl mb-6">
+                    <h5 class="font-bold mb-3">${item.title}</h5>
+                    <input id="sum-${item.id}" class="w-full bg-black/40 border border-white/10 rounded-xl p-3 text-xs text-white mb-2" placeholder="公示摘要" value="${item.summary || ''}">
+                    <textarea id="rep-${item.id}" class="w-full bg-black/40 border border-white/10 rounded-xl p-3 text-xs text-white mb-3" placeholder="回复内容">${item.reply || ''}</textarea>
+                    <div class="flex gap-2"><button onclick="updateStatus('${item.id}', '已公示')" class="flex-1 bg-blue-600 py-2 rounded-xl text-xs font-bold">通过公示</button><button onclick="updateStatus('${item.id}', '已驳回')" class="flex-1 bg-red-600 py-2 rounded-xl text-xs font-bold">驳回</button></div>
+                </div>`;
             });
+            if(!pubList.innerHTML) pubList.innerHTML = '<p class="text-gray-400 text-sm">暂无公示数据</p>';
         }
 
-        async function updateStatus(id, status, progress) {
+        async function updateStatus(id, status) {
             const summary = document.getElementById(`sum-${id}`).value;
             const reply = document.getElementById(`rep-${id}`).value;
-            // 核心点：更新数据库中的 summary 字段
-            const { error } = await _supabase.from('feedbacks').update({ status, reply, summary, progress }).eq('id', id);
-            if (!error) { alert("云端已同步！"); fetchData(); }
+            const { error } = await _supabase.from('feedbacks').update({ status, reply, summary, progress: (status==='已公示'?50:0) }).eq('id', id);
+            if (!error) { alert("更新成功！"); fetchData(); } else { alert("更新失败: " + error.message); }
         }
 
         function switchTab(tab) {
             ['public', 'submit', 'mine', 'admin'].forEach(t => document.getElementById('section-' + t).classList.add('hidden'));
             document.getElementById('section-' + tab).classList.remove('hidden');
-            const tabs = ['tab-public', 'tab-mine'];
-            tabs.forEach(id => {
-                const el = document.getElementById(id);
-                if(el) el.className = (id === 'tab-' + tab) ? 'pb-1 tab-active text-gray-800' : 'pb-1 text-gray-400';
-            });
         }
 
         function showLoginModal() { document.getElementById('login-modal').classList.remove('hidden'); }
@@ -186,11 +146,8 @@
         function loginAdmin() {
             if (document.getElementById('admin-pass').value === "nwnu1902") {
                 document.getElementById('main-body').classList.add('admin-theme');
+                document.getElementById('admin-info').classList.remove('hidden');
                 hideLoginModal(); switchTab('admin');
-            } else { alert("暗号不正确"); }
+            } else { alert("暗号错误"); }
         }
-        function logoutAdmin() { location.reload(); }
-        window.onload = fetchData;
-    </script>
-</body>
-</html>
+        window.onload
