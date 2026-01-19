@@ -12,7 +12,10 @@
         body { font-family: 'Noto Sans SC', sans-serif; background-color: #f8fafc; color: #1e293b; }
         .tab-active { color: #2563eb; border-bottom: 3px solid #2563eb; font-weight: bold; }
         .admin-theme { background-color: #0c0a09 !important; color: #f8fafc !important; }
+        .admin-theme nav { background-color: #1c1917 !important; border-bottom: 1px solid #292524 !important; }
         .card-hover:hover { transform: translateY(-4px); box-shadow: 0 10px 15px rgba(0,0,0,0.05); transition: all 0.3s; }
+        /* 解决后台全黑看不见字的问题 */
+        .admin-theme .text-gray-800 { color: #e7e5e4 !important; }
     </style>
 </head>
 <body class="pt-16 pb-20" id="main-body">
@@ -21,7 +24,7 @@
         <div class="max-w-5xl mx-auto flex justify-between items-center">
             <div class="flex items-center space-x-2 cursor-pointer" id="logo-entry" ondblclick="showLoginModal()">
                 <div class="bg-blue-600 p-2 rounded-lg text-white shadow-lg"><i class="fas fa-university"></i></div>
-                <span class="font-bold text-gray-800 text-lg" id="nav-title">智慧建言 <span class="text-blue-600 text-xs">V10.2 Cloud</span></span>
+                <span class="font-bold text-gray-800 text-lg" id="nav-title">智慧建言 <span class="text-blue-600 text-xs">V11.0 Stable</span></span>
             </div>
             
             <div id="user-nav" class="flex space-x-4 text-sm font-medium">
@@ -31,7 +34,7 @@
             </div>
 
             <div id="admin-info" class="hidden flex items-center space-x-2">
-                <span id="current-user-tag" class="text-[10px] bg-red-100 text-red-600 px-2 py-1 rounded font-bold"></span>
+                <span class="text-[10px] bg-red-100 text-red-600 px-2 py-1 rounded font-bold">超级管理员</span>
                 <button onclick="logoutAdmin()" class="text-gray-400 hover:text-red-500 text-sm"><i class="fas fa-sign-out-alt"></i></button>
             </div>
         </div>
@@ -43,10 +46,10 @@
                 <h1 class="text-2xl font-bold mb-2">校园建言动态</h1>
                 <div class="relative mt-4">
                     <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
-                    <input type="text" id="searchInput" oninput="renderPublic()" placeholder="搜索关键词..." class="w-full pl-12 pr-4 py-4 rounded-2xl text-gray-800 outline-none">
+                    <input type="text" id="searchInput" oninput="renderPublic()" placeholder="搜索公示中的建议..." class="w-full pl-12 pr-4 py-4 rounded-2xl text-gray-800 outline-none">
                 </div>
             </div>
-            <div id="public-list" class="grid grid-cols-1 md:grid-cols-2 gap-6 text-gray-800"></div>
+            <div id="public-list" class="grid grid-cols-1 md:grid-cols-2 gap-6 text-gray-800">正在同步云端数据...</div>
         </section>
 
         <section id="section-submit" class="hidden">
@@ -62,24 +65,28 @@
                             <option>生活权益部</option><option>学术科研部</option><option>文体发展部</option>
                         </select>
                     </div>
-                    <input type="tel" id="phone" class="w-full border rounded-xl p-4 bg-gray-50" placeholder="11位手机号" required>
+                    <input type="tel" id="phone" class="w-full border rounded-xl p-4 bg-gray-50" placeholder="手机号 (用于结果通知)" required>
                     <input type="text" id="title" class="w-full border rounded-xl p-4 font-bold text-lg" placeholder="提案标题" required>
                     <textarea id="issue" rows="3" class="w-full border rounded-xl p-4 bg-gray-50" placeholder="现状描述..." required></textarea>
                     <textarea id="solution" rows="3" class="w-full border rounded-xl p-4 bg-gray-50 border-green-50" placeholder="建议方案..." required></textarea>
-                    <button type="submit" id="submitBtn" class="w-full bg-blue-600 text-white font-bold py-4 rounded-2xl shadow-lg active:scale-95 transition">提交建言并同步云端</button>
+                    <button type="submit" id="submitBtn" class="w-full bg-blue-600 text-white font-bold py-4 rounded-2xl shadow-lg active:scale-95 transition">提交并同步到云端</button>
                 </form>
             </div>
         </section>
 
         <section id="section-mine" class="hidden space-y-4 text-gray-800"><div id="mine-list"></div></section>
-        <section id="section-admin" class="hidden space-y-6"><div id="admin-list"></div></section>
+
+        <section id="section-admin" class="hidden space-y-6">
+            <div class="p-4 rounded-2xl text-center text-xs text-gray-400 mb-4 border border-white/10">超级管理员：点击按钮即可将数据推向公示中心</div>
+            <div id="admin-list" class="space-y-6"></div>
+        </section>
     </main>
 
     <div id="login-modal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 z-[100]">
         <div class="bg-white rounded-3xl p-8 max-w-sm w-full text-gray-800">
             <h4 class="text-xl font-bold mb-6 text-center italic">身份核验</h4>
             <input type="password" id="admin-pass" class="w-full border border-gray-200 rounded-xl p-4 mb-4 text-center tracking-widest outline-none" placeholder="输入密码">
-            <button onclick="loginAdmin()" class="w-full bg-red-600 text-white py-4 rounded-xl font-bold">验证身份</button>
+            <button onclick="loginAdmin()" class="w-full bg-red-600 text-white py-4 rounded-xl font-bold shadow-lg">进入后台</button>
             <button onclick="hideLoginModal()" class="w-full mt-2 text-gray-400 text-xs text-center block">取消</button>
         </div>
     </div>
@@ -89,15 +96,20 @@
         const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFmdWZlbWltcmZteW1vbnF3dGZiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg3OTkzODksImV4cCI6MjA4NDM3NTM4OX0.7Xq1CN8qhslqvkErScuS5SAlDF2Hnq_z5kLV6MbqGbc"; 
         const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        const USERS = { "nwnu1902": "超级管理员" };
-        let currentAdminName = "";
         let globalData = [];
 
+        // 初始化加载
         async function fetchData() {
-            const { data } = await _supabase.from('feedbacks').select('*').order('created_at', { ascending: false });
-            if (data) { globalData = data; renderAll(); }
+            const { data, error } = await _supabase.from('feedbacks').select('*').order('created_at', { ascending: false });
+            if (error) {
+                console.error("加载失败:", error.message);
+                return;
+            }
+            globalData = data || [];
+            renderAll();
         }
 
+        // 提交建言
         async function handleFormSubmit(e) {
             e.preventDefault();
             const btn = document.getElementById('submitBtn');
@@ -114,71 +126,113 @@
                 progress: 10
             }]);
 
-            if (error) { alert("失败: " + error.message); } 
-            else { alert("提交成功！数据已入云端。"); e.target.reset(); switchTab('mine'); fetchData(); }
-            btn.innerText = "提交建言并同步云端"; btn.disabled = false;
+            if (error) { 
+                alert("提交失败，请检查数据库 progress 列是否存在或 RLS 权限是否开启: " + error.message); 
+            } else { 
+                alert("提交成功！管理员审核后将公示。"); 
+                e.target.reset(); switchTab('mine'); fetchData(); 
+            }
+            btn.innerText = "提交并同步到云端"; btn.disabled = false;
         }
 
+        // 综合渲染函数
         function renderAll() {
             const pubList = document.getElementById('public-list');
             const mineList = document.getElementById('mine-list');
             const adminList = document.getElementById('admin-list');
+            const keyword = document.getElementById('searchInput').value.toLowerCase();
             
             pubList.innerHTML = ''; mineList.innerHTML = ''; adminList.innerHTML = '';
 
+            if (globalData.length === 0) {
+                const empty = '<p class="text-gray-400 text-center py-20 w-full col-span-2">暂无数据</p>';
+                pubList.innerHTML = empty; mineList.innerHTML = empty; adminList.innerHTML = empty;
+                return;
+            }
+
             globalData.forEach(item => {
-                // 公示中心
-                if(item.status !== '待审核' && item.status !== '已驳回') {
-                    pubList.innerHTML += `<div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 card-hover">
-                        <span class="text-blue-600 text-[10px] font-bold bg-blue-50 px-2 py-1 rounded">${item.dept}</span>
-                        <h4 class="text-sm font-bold my-2">${item.summary || item.title}</h4>
-                        <div class="w-full bg-gray-100 h-1 rounded-full overflow-hidden mb-2">
-                            <div class="bg-blue-600 h-full" style="width: ${item.progress}%"></div>
-                        </div>
-                        <p class="text-[10px] text-gray-500 italic">进展：${item.reply || '正在处理'}</p>
-                    </div>`;
+                // 1. 渲染公示中心 (仅公示状态 + 搜索过滤)
+                if (item.status === '已公示' && (item.title.toLowerCase().includes(keyword) || item.dept.toLowerCase().includes(keyword))) {
+                    pubList.innerHTML += `
+                        <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 card-hover">
+                            <span class="text-blue-600 text-[10px] font-bold bg-blue-50 px-2 py-1 rounded">${item.dept}</span>
+                            <h4 class="text-sm font-bold my-2 text-gray-800">${item.summary || item.title}</h4>
+                            <div class="w-full bg-gray-100 h-1 rounded-full overflow-hidden mb-2">
+                                <div class="bg-blue-600 h-full" style="width: ${item.progress || 10}%"></div>
+                            </div>
+                            <p class="text-[10px] text-gray-500 italic">进展：${item.reply || '正在处理中'}</p>
+                        </div>`;
                 }
-                // 我的记录
-                mineList.innerHTML += `<div class="bg-white p-6 rounded-2xl border-l-4 border-blue-600 shadow-md mb-4">
-                    <div class="flex justify-between font-bold text-xs mb-2"><span>${item.title}</span><span class="text-blue-600">${item.status}</span></div>
-                    <p class="text-xs text-gray-500">${item.issue}</p>
-                    ${item.reply ? `<p class="mt-2 text-[10px] text-blue-700 bg-blue-50 p-2 rounded-lg">回复：${item.reply}</p>` : ''}
-                </div>`;
-                // 管理后台
-                adminList.innerHTML += `<div class="bg-white/10 p-6 rounded-3xl border border-white/10 text-white shadow-xl mb-6">
-                    <h5 class="font-bold mb-3">${item.title}</h5>
-                    <div class="text-xs text-gray-400 mb-4">${item.issue}</div>
-                    <input id="summary-${item.id}" class="w-full bg-black/40 border border-white/10 rounded-xl p-3 text-xs text-white mb-2 outline-none" placeholder="公示摘要" value="${item.summary || ''}">
-                    <textarea id="reply-${item.id}" class="w-full bg-black/40 border border-white/10 rounded-xl p-3 text-xs text-white mb-3 outline-none" placeholder="填写回复...">${item.reply || ''}</textarea>
-                    <div class="flex gap-2">
-                        <button onclick="updateStatus('${item.id}', '已通过', 50)" class="flex-1 bg-blue-600 py-2 rounded-xl text-xs font-bold">通过公示</button>
-                        <button onclick="updateStatus('${item.id}', '已驳回', 0)" class="flex-1 bg-red-600 py-2 rounded-xl text-xs font-bold">驳回</button>
-                    </div>
-                </div>`;
+
+                // 2. 渲染我的记录
+                mineList.innerHTML += `
+                    <div class="bg-white p-6 rounded-2xl border-l-4 border-blue-600 shadow-md mb-4">
+                        <div class="flex justify-between font-bold text-xs mb-2 text-gray-800">
+                            <span>${item.title}</span><span class="text-blue-600">${item.status}</span>
+                        </div>
+                        <p class="text-xs text-gray-500">${item.issue}</p>
+                        ${item.reply ? `<p class="mt-2 text-[10px] text-blue-800 bg-blue-50 p-2 rounded-lg">官方回复：${item.reply}</p>` : ''}
+                    </div>`;
+
+                // 3. 渲染管理员后台 (展示所有)
+                adminList.innerHTML += `
+                    <div class="bg-white/10 p-6 rounded-3xl border border-white/10 text-white shadow-xl mb-4">
+                        <div class="flex justify-between text-[10px] text-gray-500 mb-2">
+                            <span>${item.userType} | ${item.dept} | ${item.phone}</span>
+                            <span class="${item.status==='已公示'?'text-green-400':'text-yellow-400'}">${item.status}</span>
+                        </div>
+                        <h5 class="font-bold mb-4">${item.title}</h5>
+                        <div class="bg-black/40 p-3 rounded-xl text-xs text-gray-300 mb-4 italic">现状：${item.issue}</div>
+                        <textarea id="reply-${item.id}" class="w-full bg-black/40 border border-white/10 rounded-xl p-3 text-xs text-white outline-none mb-3" placeholder="回复内容...">${item.reply || ''}</textarea>
+                        <div class="flex gap-2">
+                            <button onclick="updateStatus('${item.id}', '已公示', 50)" class="flex-1 bg-blue-600 py-2 rounded-xl text-xs font-bold transition hover:bg-blue-700">通过并公示</button>
+                            <button onclick="updateStatus('${item.id}', '已驳回', 0)" class="flex-1 bg-red-600 py-2 rounded-xl text-xs font-bold transition hover:bg-red-700">驳回</button>
+                        </div>
+                    </div>`;
             });
-            if(!pubList.innerHTML) pubList.innerHTML = '<p class="text-white/50 text-sm">暂无公示数据</p>';
+            
+            if (!pubList.innerHTML) pubList.innerHTML = '<p class="text-gray-400 text-center py-20 col-span-2">没有已公示的数据</p>';
         }
 
+        // 管理员更新状态
         async function updateStatus(id, status, progress) {
             const reply = document.getElementById(`reply-${id}`).value;
-            const summary = document.getElementById(`summary-${id}`).value;
-            const { error } = await _supabase.from('feedbacks').update({ status, reply, summary, progress }).eq('id', id);
-            if (!error) { alert("更新成功！"); fetchData(); }
+            const { error } = await _supabase.from('feedbacks').update({ status, reply, progress }).eq('id', id);
+            if (!error) { 
+                alert("操作成功！"); 
+                fetchData(); 
+            } else {
+                alert("更新失败: " + error.message);
+            }
         }
 
+        // 导航切换
         function switchTab(tab) {
             ['public', 'submit', 'mine', 'admin'].forEach(t => document.getElementById('section-' + t).classList.add('hidden'));
             document.getElementById('section-' + tab).classList.remove('hidden');
+            const tabs = ['tab-public', 'tab-mine'];
+            tabs.forEach(id => {
+                const el = document.getElementById(id);
+                if(el) el.className = (id === 'tab-' + tab) ? 'pb-1 tab-active text-gray-800' : 'pb-1 text-gray-400';
+            });
+            if(tab === 'admin' || tab === 'public' || tab === 'mine') renderAll();
         }
 
+        function renderPublic() { renderAll(); }
         function showLoginModal() { document.getElementById('login-modal').classList.remove('hidden'); }
         function hideLoginModal() { document.getElementById('login-modal').classList.add('hidden'); }
+        
         function loginAdmin() {
             if (document.getElementById('admin-pass').value === "nwnu1902") {
                 document.getElementById('main-body').classList.add('admin-theme');
+                document.getElementById('navbar').classList.add('admin-theme');
+                document.getElementById('nav-title').classList.add('text-white');
+                document.getElementById('user-nav').classList.add('hidden');
+                document.getElementById('admin-info').classList.remove('hidden');
                 hideLoginModal(); switchTab('admin');
-            } else { alert("暗号错误"); }
+            } else { alert("暗号不正确"); }
         }
+
         function logoutAdmin() { location.reload(); }
         window.onload = fetchData;
     </script>
