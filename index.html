@@ -2,6 +2,98 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>西北师大智慧建言</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-50 p-6">
+
+    <div class="mb-8">
+        <h1 class="text-xl font-bold mb-2 text-slate-900">西北师大校学生会</h1>
+        <button onclick="window.open('https://docs.qq.com/form/page/DWE9pVFphQ0VzeW5h', '_blank')" 
+                class="w-full bg-blue-600 text-white py-4 rounded-xl font-bold shadow-lg active:bg-blue-700">
+            + 我要发起建言
+        </button>
+        <p class="text-[10px] text-slate-400 mt-2 text-center">点击上方蓝色按钮即可提交新建议</p>
+    </div>
+
+    <div class="mb-6">
+        <input type="text" id="searchInput" oninput="handleSearch()" placeholder="搜索公示内容..." 
+               class="w-full border-none rounded-lg p-3 text-sm shadow-sm outline-none">
+    </div>
+
+    <div>
+        <h2 class="text-lg font-bold mb-4">精选建言公示</h2>
+        <div id="card-container" class="space-y-4">
+            <p class="text-slate-400 text-sm italic">正在尝试连接云端数据库...</p>
+        </div>
+    </div>
+
+    <script>
+        // 关键：只使用核心 ID，不带任何后缀
+        const SHEET_ID = 'DWGVVR0NqZUFza3pi'; 
+        let allData = [];
+
+        async function init() {
+            const container = document.getElementById('card-container');
+            try {
+                // 强制跳过缓存请求
+                const url = `https://docs.qq.com/d_util/v1/smartsheet/public_query?id=${SHEET_ID}&_timestamp=${Date.now()}`;
+                const res = await fetch(url);
+                
+                if (!res.ok) {
+                    container.innerHTML = `<p class="text-red-500 text-xs">同步失败(错误码:${res.status})。请检查表格分享权限是否为“所有人可查看”。</p>`;
+                    return;
+                }
+
+                const json = await res.json();
+                if (json.data && json.data.rows) {
+                    allData = json.data.rows.filter(row => {
+                        // 寻找包含“审核意见”的列
+                        const cell = row.cells.find(c => c.field_name && c.field_name.trim().includes('审核意见'));
+                        return cell && cell.value === '已公示';
+                    });
+                    render(allData);
+                }
+            } catch (err) {
+                container.innerHTML = '<p class="text-slate-400 text-xs text-center">正在同步权限中，请稍后刷新...</p>';
+            }
+        }
+
+        function handleSearch() {
+            const k = document.getElementById('searchInput').value.toLowerCase();
+            const filtered = allData.filter(row => 
+                row.cells.some(c => (c.value || '').toString().toLowerCase().includes(k))
+            );
+            render(filtered);
+        }
+
+        function render(data) {
+            const container = document.getElementById('card-container');
+            if (data.length === 0) {
+                container.innerHTML = '<p class="text-slate-300 text-sm text-center py-10 italic">暂无已公示内容</p>';
+                return;
+            }
+            container.innerHTML = data.map(row => {
+                const getVal = (name) => row.cells.find(c => c.field_name && c.field_name.includes(name))?.value || '未填写';
+                return `
+                    <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-100">
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="text-[10px] bg-blue-50 text-blue-500 px-2 py-0.5 rounded font-bold">${getVal('建言分类')}</span>
+                            <span class="text-[10px] text-green-500 font-bold">● 已公示</span>
+                        </div>
+                        <h3 class="font-bold text-slate-800 mb-1">${getVal('建言标题')}</h3>
+                        <p class="text-slate-500 text-xs">${getVal('现状详述')}</p>
+                    </div>`;
+            }).join('');
+        }
+        init();
+    </script>
+</body>
+</html><!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>西北师大校学生会 - 智慧建言</title>
     <script src="https://cdn.tailwindcss.com"></script>
