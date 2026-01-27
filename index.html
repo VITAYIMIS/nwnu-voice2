@@ -2,129 +2,86 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>西北师大校学生会 - 智慧建言</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>师大校会-智慧建言</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        body { background-color: #f8fafc; font-family: system-ui, -apple-system, sans-serif; -webkit-tap-highlight-color: transparent; }
-        .glass-header { background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(10px); border-bottom: 1px solid #e2e8f0; }
-        /* 底部背景渐变，防止内容与按钮重叠 */
-        .safe-area-bottom { padding-bottom: calc(env(safe-area-inset-bottom) + 90px); }
-        .bottom-action-blur { background: linear-gradient(to top, #f8fafc 80%, rgba(248,250,252,0)); }
+        body { background-color: #f8fafc; font-family: sans-serif; }
+        .bottom-bar { background: linear-gradient(to top, #f8fafc 80%, rgba(248,250,252,0)); }
     </style>
 </head>
-<body class="safe-area-bottom">
+<body class="pb-32">
 
-    <nav class="glass-header sticky top-0 z-40 px-6 py-4">
-        <div class="flex justify-between items-center">
-            <div>
-                <h1 class="text-xl font-bold text-slate-900 leading-none">NWNU SU</h1>
-                <p class="text-[10px] text-blue-500 font-bold tracking-widest uppercase mt-1">智慧建言 · 数字化公示</p>
-            </div>
-            <div class="h-9 w-9 bg-slate-900 rounded-xl flex items-center justify-center text-white font-bold text-[10px]">师大</div>
-        </div>
+    <nav class="sticky top-0 z-40 bg-white/90 backdrop-blur-md px-6 py-4 border-b border-slate-100">
+        <h1 class="text-xl font-bold text-slate-900">西北师大校学生会</h1>
+        <p class="text-[10px] text-blue-500 font-bold tracking-widest uppercase">智慧建言公示厅</p>
     </nav>
 
     <main class="px-6 mt-6">
-        <div class="mb-6 relative">
-            <input type="text" id="searchInput" oninput="handleSearch()" 
-                   placeholder="搜索关键词（如：食堂、宿舍）..." 
-                   class="w-full bg-white border border-slate-200 rounded-2xl py-3 pl-11 pr-4 text-sm outline-none focus:ring-2 focus:ring-blue-500/20 shadow-sm transition-all">
-            <span class="absolute left-4 top-3 text-slate-400">🔍</span>
-        </div>
-
         <div class="flex justify-between items-center mb-6">
-            <h2 class="text-xl font-black text-slate-900 italic">公示厅 / GALLERY</h2>
-            <span id="data-status" class="text-[9px] bg-slate-200 px-2 py-0.5 rounded text-slate-500 font-bold uppercase tracking-tighter">同步中...</span>
+            <h2 class="text-lg font-black text-slate-800">公示中</h2>
+            <span id="data-status" class="text-[9px] bg-slate-200 px-2 py-0.5 rounded text-slate-500 font-bold">同步中...</span>
         </div>
 
         <div id="card-container" class="space-y-4">
-            <div class="py-20 text-center text-slate-300 text-xs italic">
-                正在连接师大云端数据库...
-            </div>
+            <div class="py-20 text-center text-slate-300 text-xs italic">正在同步副本表格数据...</div>
         </div>
     </main>
 
-    <div class="fixed bottom-0 left-0 right-0 p-6 bottom-action-blur z-50">
-        <div class="max-w-md mx-auto">
-            <button onclick="window.open('https://docs.qq.com/form/page/DWE9pVFphQ0VzeW5h', '_blank')" 
-                    class="w-full bg-blue-600 text-white py-4.5 rounded-[1.5rem] font-bold shadow-2xl shadow-blue-300 active:scale-95 transition-all flex items-center justify-center space-x-2">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-                </svg>
-                <span class="tracking-widest italic">我要发起建言</span>
-            </button>
-        </div>
+    <div class="fixed bottom-0 left-0 right-0 p-6 bottom-bar z-50">
+        <button onclick="window.open('https://docs.qq.com/form/page/DWE9pVFphQ0VzeW5h', '_blank')" 
+                class="w-full bg-blue-600 text-white py-4 rounded-2xl font-bold shadow-xl active:scale-95 transition-all">
+            + 我要发起建言
+        </button>
     </div>
 
     <script>
-        // 你的智能表格副本 ID
+        // 核心：使用副本 ID
         const SHEET_ID = 'DWGVVR0NqZUFza3pi'; 
         let allData = [];
 
         async function init() {
             const container = document.getElementById('card-container');
-            const statusLabel = document.getElementById('data-status');
-            
+            const status = document.getElementById('data-status');
             try {
-                // 强制跳过缓存，实时获取
+                // 请求副本的智能接口
                 const res = await fetch(`https://docs.qq.com/d_util/v1/smartsheet/public_query?id=${SHEET_ID}&_t=${Date.now()}`);
-                
-                if (!res.ok) {
-                    statusLabel.innerText = "连接失败";
-                    container.innerHTML = `<div class="p-6 bg-white rounded-2xl text-slate-400 text-xs text-center italic">权限验证未通过，请确保表格已开启“所有人可查看”。</div>`;
-                    return;
-                }
-
                 const json = await res.json();
+                
                 if (json.data && json.data.rows) {
-                    // 过滤逻辑：只要列名里带“意见”且选项为“已公示”就显示
                     allData = json.data.rows.filter(row => {
-                        const cell = row.cells.find(c => c.field_name && c.field_name.includes('意见'));
+                        // 寻找“审核意见”列，且内容为“已公示”
+                        const cell = row.cells.find(c => c.field_name && c.field_name.includes('审核意见'));
                         return cell && String(cell.value).trim() === '已公示';
                     });
-                    
-                    statusLabel.innerText = `已同步 ${allData.length} 条`;
-                    statusLabel.className = "text-[9px] bg-blue-50 px-2 py-0.5 rounded text-blue-500 font-bold";
+                    status.innerText = `已展示 ${allData.length} 条`;
                     render(allData);
                 }
             } catch (err) {
-                statusLabel.innerText = "网络异常";
+                status.innerText = "同步失败";
+                container.innerHTML = '<p class="text-xs text-slate-400">请确保副本表格已设为“所有人可查看”</p>';
             }
         }
 
         function render(data) {
             const container = document.getElementById('card-container');
             if (data.length === 0) {
-                container.innerHTML = `<div class="py-20 text-center text-slate-300 text-sm italic tracking-widest">暂无公示信息<br><span class="text-[10px]">管理员审核通过并标记“已公示”后将在此显示</span></div>`;
+                container.innerHTML = '<p class="text-center py-20 text-slate-300 text-sm italic">暂无公示内容</p>';
                 return;
             }
             container.innerHTML = data.map(row => {
-                const getV = (name) => row.cells.find(c => c.field_name && c.field_name.includes(name))?.value || '未填';
+                const getV = (name) => row.cells.find(c => c.field_name && c.field_name.includes(name))?.value || '-';
                 return `
-                    <div class="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-50">
-                        <div class="flex justify-between items-center mb-4">
-                            <span class="text-[9px] font-black text-blue-500 bg-blue-50 px-2.5 py-1 rounded-lg border border-blue-100 uppercase tracking-tighter">${getV('分类')}</span>
-                            <span class="text-[9px] font-bold text-green-500 italic tracking-tighter">● 已公示</span>
+                    <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-50">
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="text-[9px] font-bold text-blue-500 bg-blue-50 px-2 py-0.5 rounded">${getV('分类')}</span>
+                            <span class="text-[9px] font-bold text-green-500 italic">● 已公示</span>
                         </div>
-                        <h3 class="font-bold text-slate-800 text-sm mb-2 leading-snug">${getV('标题')}</h3>
-                        <p class="text-slate-500 text-[11px] leading-relaxed mb-6 line-clamp-3">${getV('现状')}</p>
-                        <div class="pt-5 border-t border-slate-50 flex justify-between items-center">
-                            <span class="text-[8px] text-slate-300 font-medium tracking-tighter">${getV('时间')}</span>
-                            <span class="text-[8px] text-slate-400 font-black italic tracking-widest">NWNU SU</span>
-                        </div>
+                        <h3 class="font-bold text-slate-800 text-sm mb-1">${getV('标题')}</h3>
+                        <p class="text-slate-500 text-[10px] leading-relaxed">${getV('现状')}</p>
                     </div>`;
             }).join('');
         }
-
-        function handleSearch() {
-            const k = document.getElementById('searchInput').value.toLowerCase();
-            const filtered = allData.filter(row => 
-                row.cells.some(c => String(c.value || '').toLowerCase().includes(k))
-            );
-            render(filtered);
-        }
-
         init();
     </script>
 </body>
