@@ -11,7 +11,109 @@
     </style>
 </head>
 <body class="pb-32">
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>师大校会-智慧建言</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-[#f8fafc] pb-32">
 
+    <nav class="sticky top-0 z-50 bg-white/95 backdrop-blur-md px-6 py-4 border-b border-slate-100 shadow-sm">
+        <h1 class="text-xl font-bold text-slate-900 tracking-tight">西北师大校学生会</h1>
+        <p class="text-[10px] text-blue-600 font-bold tracking-[0.2em] uppercase opacity-70">建言公示厅 · 数字化枢纽</p>
+    </nav>
+
+    <main class="px-6 mt-6">
+        <div id="status-tag" class="mb-5 text-[10px] text-center p-2 bg-slate-100 text-slate-500 rounded-xl font-mono transition-all">
+            正在握手腾讯云 API...
+        </div>
+
+        <div id="card-container" class="grid gap-4">
+            <div class="animate-pulse bg-white h-32 rounded-3xl"></div>
+        </div>
+    </main>
+
+    <div class="fixed bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-[#f8fafc] via-[#f8fafc] to-transparent z-50">
+        <div class="max-w-md mx-auto">
+            <button onclick="window.open('https://docs.qq.com/form/page/DWE9pVFphQ0VzeW5h', '_blank')" 
+                    class="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 rounded-[1.5rem] font-bold shadow-2xl shadow-blue-200 active:scale-95 transition-all flex items-center justify-center gap-2">
+                <span class="text-xl">+</span>
+                <span class="tracking-widest">我要发起建言</span>
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // 你的副本 ID 已经硬编码
+        const SHEET_ID = 'DWGVVR0NqZUFza3pi'; 
+
+        async function init() {
+            const container = document.getElementById('card-container');
+            const status = document.getElementById('status-tag');
+            
+            try {
+                const res = await fetch(`https://docs.qq.com/d_util/v1/smartsheet/public_query?id=${SHEET_ID}&_t=${Date.now()}`);
+                
+                if (!res.ok) {
+                    status.innerText = `权限受限 (Code: ${res.status})`;
+                    status.classList.replace('bg-slate-100', 'bg-red-50');
+                    status.classList.replace('text-slate-500', 'text-red-500');
+                    return;
+                }
+
+                const json = await res.json();
+                
+                if (json.ret === 0 && json.data?.rows) {
+                    // 全文扫描过滤：不限列名，只要单元格内容是“已公示”就显示
+                    const activeRows = json.data.rows.filter(row => 
+                        row.cells.some(cell => String(cell.value).trim() === '已公示')
+                    );
+                    
+                    status.innerText = `数据已同步 | 公示条目: ${activeRows.length}`;
+                    status.classList.replace('bg-slate-100', 'bg-blue-50');
+                    status.classList.replace('text-slate-500', 'text-blue-600');
+                    render(activeRows);
+                } else {
+                    status.innerText = "表格内未发现公示标记";
+                }
+            } catch (err) {
+                status.innerText = "网络连接异常";
+            }
+        }
+
+        function render(rows) {
+            const container = document.getElementById('card-container');
+            if (rows.length === 0) {
+                container.innerHTML = `<div class="py-20 text-center text-slate-300 text-sm italic">暂无公示数据<br><span class="text-[10px]">请在副本表格中选择“已公示”</span></div>`;
+                return;
+            }
+            container.innerHTML = rows.map(row => {
+                // 自动匹配字段，防止副本字段名错乱
+                const findValue = (keys) => row.cells.find(c => keys.some(k => c.field_name?.includes(k)))?.value || '—';
+                
+                return `
+                    <div class="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-100 animate-in fade-in slide-in-from-bottom-3 duration-500">
+                        <div class="flex justify-between items-center mb-4">
+                            <span class="text-[10px] font-bold text-blue-600 bg-blue-50 px-2.5 py-1 rounded-lg uppercase">${findValue(['分类', '类型'])}</span>
+                            <span class="text-[10px] font-bold text-green-500 italic">● 已公示</span>
+                        </div>
+                        <h3 class="font-bold text-slate-800 text-sm mb-2 leading-snug">${findValue(['标题', '主题'])}</h3>
+                        <p class="text-slate-500 text-[11px] leading-relaxed mb-4 line-clamp-3">${findValue(['现状', '描述', '内容'])}</p>
+                        <div class="pt-4 border-t border-slate-50 flex justify-between items-center text-[8px] text-slate-300 font-bold uppercase tracking-widest">
+                            <span>${findValue(['时间', '日期'])}</span>
+                            <span class="text-slate-400 italic">NWNU SU</span>
+                        </div>
+                    </div>`;
+            }).join('');
+        }
+
+        init();
+    </script>
+</body>
+</html>
     <nav class="sticky top-0 z-40 bg-white/90 backdrop-blur-md px-6 py-4 border-b border-slate-100">
         <h1 class="text-xl font-bold text-slate-900">西北师大校学生会</h1>
         <p class="text-[10px] text-blue-500 font-bold tracking-widest uppercase">智慧建言公示厅</p>
