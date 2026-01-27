@@ -2,152 +2,122 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NWNU 智慧建言 | 数字化治理平台</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>智慧建言 - 数字化治理平台</title>
+    
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="智慧建言">
+    
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&display=swap');
-        body { font-family: 'Noto Sans SC', sans-serif; background-color: #f8fafc; color: #1e293b; padding-top: 64px; }
-        .tab-active { color: #2563eb; border-bottom: 3px solid #2563eb; font-weight: bold; }
-        .admin-theme { background-color: #0c0a09 !important; color: #f8fafc !important; }
-        .card-hover:hover { transform: translateY(-4px); box-shadow: 0 10px 15px rgba(0,0,0,0.05); transition: 0.3s; }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
+        .glass-nav { background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(10px); }
+        .card-gradient { background: linear-gradient(135deg, #ffffff 0%, #f0f7ff 100%); }
     </style>
 </head>
-<body id="main-body">
+<body class="pb-20">
 
-    <nav class="fixed top-0 w-full bg-white/95 backdrop-blur shadow-sm z-50 px-4 py-3 border-b border-gray-100" id="navbar">
-        <div class="max-w-5xl mx-auto flex justify-between items-center">
-            <div class="flex items-center space-x-2 cursor-pointer" ondblclick="showLoginModal()">
-                <div class="bg-blue-600 p-2 rounded-lg text-white shadow-lg"><i class="fas fa-university"></i></div>
-                <span class="font-bold text-gray-800 text-lg" id="nav-title">智慧建言 <span class="text-blue-600 text-xs">V11.8-Fix</span></span>
-            </div>
-            <div id="user-nav" class="flex space-x-4 text-sm font-medium">
-                <button onclick="switchTab('public')" id="tab-public" class="pb-1 tab-active text-gray-800">公示中心</button>
-                <button onclick="switchTab('mine')" id="tab-mine" class="pb-1 text-gray-400">我的记录</button>
-                <button onclick="switchTab('submit')" id="tab-submit" class="pb-1 text-blue-600 font-bold bg-blue-50 px-3 py-1 rounded-full">写提案</button>
-            </div>
-            <div id="admin-info" class="hidden"><button onclick="location.reload()" class="text-gray-400 text-sm">退出管理</button></div>
+    <nav class="glass-nav sticky top-0 z-50 px-6 py-4 flex justify-between items-center border-b border-gray-100">
+        <div>
+            <h1 class="text-xl font-bold text-blue-900">Campus Voice</h1>
+            <p class="text-[10px] text-blue-400 font-medium tracking-widest uppercase">NWNU Digital Gov</p>
+        </div>
+        <div class="h-10 w-10 bg-blue-600 rounded-2xl flex items-center justify-center text-white font-bold shadow-lg shadow-blue-200">
+            Y
         </div>
     </nav>
 
-    <main class="max-w-4xl mx-auto px-4 mt-8">
-        <section id="section-public">
-            <div class="bg-gradient-to-br from-blue-700 to-indigo-900 rounded-3xl p-8 text-white shadow-xl mb-8">
-                <h1 class="text-2xl font-bold mb-2">校园建言动态</h1>
-                <input type="text" id="searchInput" oninput="renderAll()" placeholder="搜索..." class="w-full p-4 rounded-2xl text-gray-800 mt-4 outline-none">
+    <main class="px-6 mt-8">
+        <header class="mb-8">
+            <h2 class="text-3xl font-extrabold text-slate-800">最新建言公示</h2>
+            <p class="text-slate-400 text-sm mt-2">透明治理 · 实时反馈 · 共同进步</p>
+        </header>
+
+        <div id="card-container" class="space-y-4">
+            <div class="animate-pulse flex flex-col space-y-4">
+                <div class="h-32 bg-gray-200 rounded-3xl"></div>
+                <div class="h-32 bg-gray-200 rounded-3xl"></div>
             </div>
-            <div id="public-list" class="grid grid-cols-1 md:grid-cols-2 gap-6">正在加载云端数据...</div>
-        </section>
-
-        <section id="section-submit" class="hidden">
-            <form class="bg-white rounded-3xl shadow-xl p-8 space-y-4" onsubmit="handleFormSubmit(event)">
-                <div class="grid grid-cols-2 gap-4">
-                    <select id="userType" class="border rounded-xl p-4 bg-gray-50 text-gray-800"><option>大一</option><option>大二</option><option>大三</option><option>大四</option><option>研究生</option></select>
-                    <select id="targetDept" class="border rounded-xl p-4 bg-gray-50 text-gray-800"><option>生活权益部</option><option>学术科研部</option><option>文体发展部</option></select>
-                </div>
-                <input type="text" id="title" class="w-full border rounded-xl p-4 font-bold text-gray-800" placeholder="提案标题" required>
-                <textarea id="issue" rows="3" class="w-full border rounded-xl p-4 bg-gray-50 text-gray-800" placeholder="现状描述..." required></textarea>
-                <textarea id="solution" rows="3" class="w-full border rounded-xl p-4 bg-gray-50 text-gray-800" placeholder="建议方案..." required></textarea>
-                <button type="submit" id="submitBtn" class="w-full bg-blue-600 text-white font-bold py-4 rounded-2xl shadow-lg">提交到云端</button>
-            </form>
-        </section>
-
-        <section id="section-mine" class="hidden space-y-4"><div id="mine-list" class="text-gray-800"></div></section>
-
-        <section id="section-admin" class="hidden space-y-6"><div id="admin-list"></div></section>
+        </div>
     </main>
 
-    <div id="login-modal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 z-[100]">
-        <div class="bg-white rounded-3xl p-8 max-w-sm w-full text-gray-800"><input type="password" id="admin-pass" class="w-full border p-4 mb-4 text-center rounded-xl" placeholder="暗号"><button onclick="loginAdmin()" class="w-full bg-red-600 text-white py-4 rounded-xl font-bold">验证</button></div>
+    <div class="fixed bottom-6 left-6 right-6">
+        <button onclick="window.open('https://docs.qq.com/form/fill/XXXXXXXX')" class="w-full bg-slate-900 text-white py-4 rounded-3xl font-bold shadow-2xl shadow-slate-300 active:scale-95 transition-transform">
+            提交新建议
+        </button>
     </div>
 
     <script>
-        const SUPABASE_URL = "https://qfufemimrfmymonqwtfb.supabase.co";
-        const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFmdWZlbWltcmZteW1vbnF3dGZiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg3OTkzODksImV4cCI6MjA4NDM3NTM4OX0.7Xq1CN8qhslqvkErScuS5SAlDF2Hnq_z5kLV6MbqGbc"; 
-        const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        // 你的腾讯文档 ID
+        const DOC_ID = 'DWFR0b1N4S2N6RW5u';
 
-        let globalData = [];
+        async function initProject() {
+            try {
+                // 1. 获取数据
+                const response = await fetch(`https://docs.qq.com/d_util/v1/smartsheet/public_query?id=${DOC_ID}`);
+                const result = await response.json();
+                
+                // 2. 提取并过滤数据
+                const rows = result.data.rows;
+                const publicEntries = rows.filter(row => {
+                    const status = row.cells.find(c => c.field_name === '审核状态')?.value;
+                    return status === '已公示';
+                });
 
-        async function fetchData() {
-            const { data, error } = await _supabase.from('feedbacks').select('*').order('created_at', { ascending: false });
-            if (data) { globalData = data; renderAll(); }
-            if (error) console.error("读取错误:", error);
-        }
-
-        async function handleFormSubmit(e) {
-            e.preventDefault();
-            const btn = document.getElementById('submitBtn');
-            btn.innerText = "上传中..."; btn.disabled = true;
-            const payload = {
-                title: document.getElementById('title').value,
-                userType: document.getElementById('userType').value,
-                dept: document.getElementById('targetDept').value,
-                issue: document.getElementById('issue').value,
-                solution: document.getElementById('solution').value,
-                status: '待审核',
-                progress: 10
-            };
-            const { error } = await _supabase.from('feedbacks').insert([payload]);
-            if (error) { alert("提交失败: " + error.message); } 
-            else { alert("提交成功！"); e.target.reset(); switchTab('mine'); fetchData(); }
-            btn.innerText = "提交到云端"; btn.disabled = false;
-        }
-
-        function renderAll() {
-            const pubList = document.getElementById('public-list');
-            const mineList = document.getElementById('mine-list');
-            const adminList = document.getElementById('admin-list');
-            const kw = document.getElementById('searchInput').value.toLowerCase();
-            
-            pubList.innerHTML = ''; mineList.innerHTML = ''; adminList.innerHTML = '';
-
-            globalData.forEach(item => {
-                // 公示中心：仅公示 + 搜索过滤
-                if(item.status === '已公示' && (item.title.toLowerCase().includes(kw) || (item.summary && item.summary.toLowerCase().includes(kw)))) {
-                    pubList.innerHTML += `<div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 card-hover text-gray-800 mb-4">
-                        <span class="text-blue-600 text-[10px] font-bold bg-blue-50 px-2 py-0.5 rounded">${item.dept}</span>
-                        <h4 class="text-sm font-bold my-2">${item.summary || item.title}</h4>
-                        <p class="text-[10px] text-gray-500 italic">进展：${item.reply || '正在处理'}</p>
+                // 3. 渲染页面
+                renderCards(publicEntries);
+            } catch (error) {
+                console.error("加载失败:", error);
+                document.getElementById('card-container').innerHTML = `
+                    <div class="text-center py-10">
+                        <p class="text-gray-400 text-sm">数据同步遇到小障碍，请刷新重试</p>
                     </div>`;
-                }
-                // 我的记录
-                mineList.innerHTML += `<div class="bg-white p-6 rounded-2xl border-l-4 ${item.status==='已驳回'?'border-red-500':'border-blue-600'} shadow-md mb-4">
-                    <div class="flex justify-between font-bold text-xs mb-2"><span>${item.title}</span><span class="text-blue-600">${item.status}</span></div>
-                    <p class="text-xs text-gray-500">${item.issue}</p>
-                    ${item.reply ? `<p class="mt-2 text-[10px] text-blue-700 bg-blue-50 p-2 rounded-lg italic">回复：${item.reply}</p>` : ''}
-                </div>`;
-                // 后台管理
-                adminList.innerHTML += `<div class="bg-white/10 p-6 rounded-3xl border border-white/10 text-white shadow-xl mb-6">
-                    <h5 class="font-bold mb-3">${item.title}</h5>
-                    <input id="sum-${item.id}" class="w-full bg-black/40 border border-white/10 rounded-xl p-3 text-xs text-white mb-2" placeholder="公示摘要" value="${item.summary || ''}">
-                    <textarea id="rep-${item.id}" class="w-full bg-black/40 border border-white/10 rounded-xl p-3 text-xs text-white mb-3" placeholder="回复内容">${item.reply || ''}</textarea>
-                    <div class="flex gap-2"><button onclick="updateStatus('${item.id}', '已公示')" class="flex-1 bg-blue-600 py-2 rounded-xl text-xs font-bold">通过公示</button><button onclick="updateStatus('${item.id}', '已驳回')" class="flex-1 bg-red-600 py-2 rounded-xl text-xs font-bold">驳回</button></div>
-                </div>`;
-            });
-            if(!pubList.innerHTML) pubList.innerHTML = '<p class="text-gray-400 text-sm">暂无公示数据</p>';
+            }
         }
 
-        async function updateStatus(id, status) {
-            const summary = document.getElementById(`sum-${id}`).value;
-            const reply = document.getElementById(`rep-${id}`).value;
-            const { error } = await _supabase.from('feedbacks').update({ status, reply, summary, progress: (status==='已公示'?50:0) }).eq('id', id);
-            if (!error) { alert("更新成功！"); fetchData(); } else { alert("更新失败: " + error.message); }
+        function renderCards(data) {
+            const container = document.getElementById('card-container');
+            if (data.length === 0) {
+                container.innerHTML = '<p class="text-center text-gray-400 mt-10">暂无公示建议</p>';
+                return;
+            }
+
+            container.innerHTML = data.map(item => {
+                const getValue = (name) => item.cells.find(c => c.field_name === name)?.value || '未填写';
+                
+                return `
+                    <div class="card-gradient p-6 rounded-[2rem] border border-white shadow-sm transition-all active:scale-[0.98]">
+                        <div class="flex justify-between items-start mb-4">
+                            <span class="px-3 py-1 bg-white/60 text-blue-500 text-[10px] font-bold rounded-full border border-blue-50">
+                                ${getValue('分类')}
+                            </span>
+                            <span class="text-[10px] font-bold ${getValue('处理进展') === '已解决' ? 'text-green-500' : 'text-amber-500'}">
+                                ● ${getValue('处理进展')}
+                            </span>
+                        </div>
+                        <h3 class="text-lg font-bold text-slate-800 leading-snug mb-2">
+                            ${getValue('标题')}
+                        </h3>
+                        <p class="text-slate-500 text-xs leading-relaxed line-clamp-2">
+                            ${getValue('一句话摘要')}
+                        </p>
+                        <div class="mt-4 pt-4 border-t border-blue-100/50 flex items-center justify-between">
+                            <span class="text-[10px] text-slate-400">${getValue('时间')}</span>
+                            <div class="flex -space-x-2">
+                                <div class="w-6 h-6 rounded-full border-2 border-white bg-blue-100 flex items-center justify-center text-[8px] font-bold text-blue-600">G</div>
+                                <div class="w-6 h-6 rounded-full border-2 border-white bg-slate-800 flex items-center justify-center text-[8px] font-bold text-white">Y</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
         }
 
-        function switchTab(tab) {
-            ['public', 'submit', 'mine', 'admin'].forEach(t => document.getElementById('section-' + t).classList.add('hidden'));
-            document.getElementById('section-' + tab).classList.remove('hidden');
-        }
-
-        function showLoginModal() { document.getElementById('login-modal').classList.remove('hidden'); }
-        function hideLoginModal() { document.getElementById('login-modal').classList.add('hidden'); }
-        function loginAdmin() {
-            if (document.getElementById('admin-pass').value === "nwnu1902") {
-                document.getElementById('main-body').classList.add('admin-theme');
-                document.getElementById('admin-info').classList.remove('hidden');
-                hideLoginModal(); switchTab('admin');
-            } else { alert("暗号错误"); }
-        }
-        window.onload
+        // 启动启动！
+        initProject();
+    </script>
+</body>
+</html>
