@@ -3,84 +3,34 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>西北师大校学生会 - 智慧建言</title>
+    <title>西北师大校学生会 - 倾听建言</title>
+    
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="师大建言">
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
-        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; overflow-x: hidden; }
         .glass-nav { background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(12px); }
-        .search-bar { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
-        .card-gradient { background: linear-gradient(135deg, #ffffff 0%, #f3f8ff 100%); }
+        .card-gradient { background: linear-gradient(135deg, #ffffff 0%, #f3f8ff 100%); transition: all 0.3s ease; }
+        .card-gradient:active { transform: scale(0.98); }
+        .search-focus:focus-within { transform: translateY(-2px); box-shadow: 0 4px 20px -5px rgba(59, 130, 246, 0.15); }
     </style>
 </head>
 <body class="pb-28">
 
     <nav class="glass-nav sticky top-0 z-50 px-6 py-5 border-b border-blue-50">
-        <div class="flex justify-between items-center mb-4">
+        <div class="flex justify-between items-center mb-5">
             <div>
                 <h1 class="text-xl font-bold text-slate-900 tracking-tight">NWNU Student Union</h1>
-                <p class="text-[9px] text-blue-500 font-bold tracking-widest uppercase opacity-70">倾听建言 · 数字化治理</p>
+                <p class="text-[9px] text-blue-500 font-bold tracking-widest uppercase opacity-80">倾听建言 · 数字化治理平台</p>
             </div>
-            <div class="h-10 w-10 bg-slate-900 rounded-2xl flex items-center justify-center text-white font-bold shadow-lg text-sm">师大</div>
+            <div class="h-10 w-10 bg-slate-900 rounded-2xl flex items-center justify-center text-white font-bold shadow-lg text-xs">师大</div>
         </div>
 
-        <div class="search-bar relative">
+        <div class="search-focus relative transition-all duration-300">
             <input type="text" id="searchInput" oninput="handleSearch()" 
-                   placeholder="搜索已公示的建言..." 
-                   class="w-full bg-slate-100/50 border-none rounded-2xl py-3 pl-11 pr-4 text-sm focus:ring-2 focus:ring-blue-500/20 outline-none">
-            <svg class="w-5 h-5 text-slate-400 absolute left-4 top-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-            </svg>
-        </div>
-    </nav>
-
-    <main class="px-6 mt-6">
-        <header class="mb-6 flex justify-between items-end">
-            <div>
-                <h2 class="text-2xl font-black text-slate-900">建言公示区</h2>
-                <p class="text-slate-400 text-[10px] mt-1">定期更新 · 民主监督</p>
-            </div>
-            <span id="data-count" class="text-[10px] bg-blue-50 text-blue-500 px-2 py-1 rounded-lg font-bold">载入中...</span>
-        </header>
-
-        <div id="card-container" class="space-y-5">
-            <div class="animate-pulse space-y-4">
-                <div class="h-32 bg-slate-200 rounded-[2rem]"></div>
-                <div class="h-32 bg-slate-200 rounded-[2rem]"></div>
-            </div>
-        </div>
-    </main>
-
-    <div class="fixed bottom-8 left-6 right-6 flex space-x-3">
-        <button onclick="location.reload()" class="bg-white p-5 rounded-3xl shadow-lg border border-slate-100 active:scale-95 transition-transform">
-            <svg class="w-6 h-6 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
-        </button>
-        <button onclick="window.open('https://docs.qq.com/form/page/DWE9pVFphQ0VzeW5h', '_blank')" 
-                class="flex-1 bg-blue-600 text-white py-5 rounded-[2rem] font-bold shadow-xl shadow-blue-200 flex items-center justify-center space-x-2 active:scale-95 transition-transform">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
-            <span>我要建言</span>
-        </button>
-    </div>
-
-    <script>
-        const SHEET_ID = 'DWFh5Z21OcFZtSmFK';
-        let allData = [];
-
-        async function loadAppData() {
-            try {
-                const res = await fetch(`https://docs.qq.com/d_util/v1/smartsheet/public_query?id=${SHEET_ID}`);
-                const json = await res.json();
-                
-                // 核心逻辑：只显示“审核意见”为“已公示”的条目
-                allData = json.data.rows.filter(row => {
-                    const status = row.cells.find(c => c.field_name === '审核意见')?.value;
-                    return status === '已公示';
-                });
-
-                document.getElementById('data-count').innerText = `已公示 ${allData.length} 条`;
-                renderCards(allData);
-            } catch (err) {
-                console.error("数据同步障碍:", err);
-                document.getElementById('card-container').innerHTML = `<p class="text-center text-slate-400 py-2
+                   placeholder="搜索已公示的精选建言..." 
+                   class="w-full bg-slate-100/60 border-none rounded-2xl py-3.5 pl-11 pr-4 text-sm focus:ring-2 focus:ring-
