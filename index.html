@@ -5,19 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>师大校会-智慧建言</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        body { background-color: #f8fafc; font-family: sans-serif; }
-        .bottom-bar { background: linear-gradient(to top, #f8fafc 80%, rgba(248,250,252,0)); }
-    </style>
-</head>
-<body class="pb-32">
-<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>师大校会-智慧建言</title>
-    <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-[#f8fafc] pb-32">
 
@@ -110,80 +97,6 @@
             }).join('');
         }
 
-        init();
-    </script>
-</body>
-</html>
-    <nav class="sticky top-0 z-40 bg-white/90 backdrop-blur-md px-6 py-4 border-b border-slate-100">
-        <h1 class="text-xl font-bold text-slate-900">西北师大校学生会</h1>
-        <p class="text-[10px] text-blue-500 font-bold tracking-widest uppercase">智慧建言公示厅</p>
-    </nav>
-
-    <main class="px-6 mt-6">
-        <div class="flex justify-between items-center mb-6">
-            <h2 class="text-lg font-black text-slate-800">公示中</h2>
-            <span id="data-status" class="text-[9px] bg-slate-200 px-2 py-0.5 rounded text-slate-500 font-bold">同步中...</span>
-        </div>
-
-        <div id="card-container" class="space-y-4">
-            <div class="py-20 text-center text-slate-300 text-xs italic">正在同步副本表格数据...</div>
-        </div>
-    </main>
-
-    <div class="fixed bottom-0 left-0 right-0 p-6 bottom-bar z-50">
-        <button onclick="window.open('https://docs.qq.com/form/page/DWE9pVFphQ0VzeW5h', '_blank')" 
-                class="w-full bg-blue-600 text-white py-4 rounded-2xl font-bold shadow-xl active:scale-95 transition-all">
-            + 我要发起建言
-        </button>
-    </div>
-
-    <script>
-        // 核心：使用副本 ID
-        const SHEET_ID = 'DWGVVR0NqZUFza3pi'; 
-        let allData = [];
-
-        async function init() {
-            const container = document.getElementById('card-container');
-            const status = document.getElementById('data-status');
-            try {
-                // 请求副本的智能接口
-                const res = await fetch(`https://docs.qq.com/d_util/v1/smartsheet/public_query?id=${SHEET_ID}&_t=${Date.now()}`);
-                const json = await res.json();
-                
-                if (json.data && json.data.rows) {
-                    allData = json.data.rows.filter(row => {
-                        // 寻找“审核意见”列，且内容为“已公示”
-                        const cell = row.cells.find(c => c.field_name && c.field_name.includes('审核意见'));
-                        return cell && String(cell.value).trim() === '已公示';
-                    });
-                    status.innerText = `已展示 ${allData.length} 条`;
-                    render(allData);
-                }
-            } catch (err) {
-                status.innerText = "同步失败";
-                container.innerHTML = '<p class="text-xs text-slate-400">请确保副本表格已设为“所有人可查看”</p>';
-            }
-        }
-
-        function render(data) {
-            const container = document.getElementById('card-container');
-            if (data.length === 0) {
-                container.innerHTML = '<p class="text-center py-20 text-slate-300 text-sm italic">暂无公示内容</p>';
-                return;
-            }
-            container.innerHTML = data.map(row => {
-                const getV = (name) => row.cells.find(c => c.field_name && c.field_name.includes(name))?.value || '-';
-                return `
-                    <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-50">
-                        <div class="flex justify-between items-center mb-2">
-                            <span class="text-[9px] font-bold text-blue-500 bg-blue-50 px-2 py-0.5 rounded">${getV('分类')}</span>
-                            <span class="text-[9px] font-bold text-green-500 italic">● 已公示</span>
-                        </div>
-                        <h3 class="font-bold text-slate-800 text-sm mb-1">${getV('标题')}</h3>
-                        <p class="text-slate-500 text-[10px] leading-relaxed">${getV('现状')}</p>
-                    </div>`;
-            }).join('');
-        }
         init();
     </script>
 </body>
