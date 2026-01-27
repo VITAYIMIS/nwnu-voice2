@@ -2,49 +2,55 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>西北师大校学生会 - 智慧建言</title>
-    
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
-        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
-        .glass-nav { background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(12px); }
-        .card-gradient { background: linear-gradient(135deg, #ffffff 0%, #f3f8ff 100%); transition: transform 0.2s; }
-        .card-gradient:active { transform: scale(0.98); }
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; -webkit-tap-highlight-color: transparent; }
+        .glass-nav { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(226, 232, 240, 0.8); }
+        .card-shadow { box-shadow: 0 10px 25px -5px rgba(59, 130, 246, 0.05); }
+        /* 底部安全区适配 */
+        .safe-bottom { padding-bottom: calc(env(safe-area-inset-bottom) + 90px); }
+        .action-blur { background: linear-gradient(to top, #f8fafc 85%, rgba(248,250,252,0)); }
     </style>
 </head>
-<body class="pb-28">
+<body class="safe-bottom">
 
-    <nav class="glass-nav sticky top-0 z-50 px-6 py-5 border-b border-blue-50 text-center">
-        <div class="flex justify-between items-center mb-5">
+    <nav class="glass-nav sticky top-0 z-50 px-6 py-4">
+        <div class="flex justify-between items-center mb-4">
             <div class="text-left">
-                <h1 class="text-xl font-bold text-slate-900 leading-tight">NWNU Student Union</h1>
-                <p class="text-[9px] text-blue-500 font-bold tracking-widest uppercase opacity-80">建言公示厅 · 师大青年之声</p>
+                <h1 class="text-lg font-bold text-slate-900 leading-tight tracking-tight">NWNU SU</h1>
+                <p class="text-[9px] text-blue-600 font-bold tracking-widest uppercase opacity-80">建言公示厅 · 数字化治理</p>
             </div>
-            <div class="h-10 w-10 bg-slate-900 rounded-2xl flex items-center justify-center text-white font-bold shadow-lg text-xs">师大</div>
+            <div class="h-9 w-9 bg-slate-900 rounded-xl flex items-center justify-center text-white font-bold text-[10px] shadow-lg">师大</div>
         </div>
-
         <div class="relative">
             <input type="text" id="searchInput" oninput="handleSearch()" 
-                   placeholder="输入关键词搜索已公示建言..." 
-                   class="w-full bg-slate-100/60 border-none rounded-2xl py-3.5 pl-11 pr-4 text-sm focus:ring-2 focus:ring-blue-500/20 outline-none">
-            <svg class="w-5 h-5 text-slate-400 absolute left-4 top-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                   placeholder="搜索已公示的建言..." 
+                   class="w-full bg-slate-100/80 border-none rounded-xl py-3 pl-10 pr-4 text-sm focus:ring-2 focus:ring-blue-500/20 outline-none transition-all">
+            <svg class="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
             </svg>
         </div>
     </nav>
 
-    <main class="px-6 mt-8">
-        <header class="mb-8 flex justify-between items-end">
+    <main class="px-6 mt-8 text-center">
+        <div class="flex justify-between items-end mb-8 text-left">
             <div>
                 <h2 class="text-3xl font-black text-slate-900">公示中</h2>
                 <div class="h-1 w-10 bg-blue-600 mt-2 rounded-full"></div>
             </div>
-            <span id="data-count" class="text-[10px] bg-blue-50 text-blue-600 px-3 py-1 rounded-full font-bold">同步中...</span>
-        </header>
+            <span id="data-count" class="text-[10px] bg-blue-50 text-blue-600 px-3 py-1 rounded-full font-bold">连接中...</span>
+        </div>
+        
+        <div id="card-container" class="space-y-5 text-left">
+            <p class="py-20 text-center text-slate-300 text-xs italic tracking-widest">正在同步云端数据，请稍候...</p>
+        </div>
+    </main>
 
-        <div id="card-container" class="space-y-5">
+    <div class="fixed bottom-0 left-0 right-0 px-6 py-6 action-blur z-[100]">
+        <div class="flex space-x-3 max-w-lg mx-auto items-center">
+            <button onclick="location.reload()" class="bg-white p-4 rounded-2xl shadow-xl border border-slate-100 active:scale-90 transition-transform flex items-center justify-center">
+                <svg class="w-6 h-6 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.
