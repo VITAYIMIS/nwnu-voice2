@@ -1,5 +1,148 @@
 <!DOCTYPE html>
+<html lang="zh-CN"><!DOCTYPE html>
 <html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>西北师大校学生会 - 倾听建言</title>
+    
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="师大建言">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; overflow-x: hidden; }
+        .glass-nav { background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(12px); }
+        .card-gradient { background: linear-gradient(135deg, #ffffff 0%, #f3f8ff 100%); transition: all 0.3s ease; }
+        .card-gradient:active { transform: scale(0.98); }
+        .search-focus:focus-within { transform: translateY(-2px); box-shadow: 0 4px 20px -5px rgba(59, 130, 246, 0.15); }
+    </style>
+</head>
+<body class="pb-28">
+
+    <nav class="glass-nav sticky top-0 z-50 px-6 py-5 border-b border-blue-50">
+        <div class="flex justify-between items-center mb-5">
+            <div>
+                <h1 class="text-xl font-bold text-slate-900 tracking-tight">NWNU Student Union</h1>
+                <p class="text-[9px] text-blue-500 font-bold tracking-widest uppercase opacity-80">倾听建言 · 数字化治理平台</p>
+            </div>
+            <div class="h-10 w-10 bg-slate-900 rounded-2xl flex items-center justify-center text-white font-bold shadow-lg text-xs">师大</div>
+        </div>
+
+        <div class="search-focus relative transition-all duration-300">
+            <input type="text" id="searchInput" oninput="handleSearch()" 
+                   placeholder="搜索已公示的精选建言..." 
+                   class="w-full bg-slate-100/60 border-none rounded-2xl py-3.5 pl-11 pr-4 text-sm focus:ring-2 focus:ring-blue-500/20 outline-none">
+            <svg class="w-5 h-5 text-slate-400 absolute left-4 top-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+            </svg>
+        </div>
+    </nav>
+
+    <main class="px-6 mt-8">
+        <header class="mb-8 flex justify-between items-end">
+            <div>
+                <h2 class="text-3xl font-black text-slate-900">公示厅</h2>
+                <div class="h-1.5 w-8 bg-blue-600 mt-2 rounded-full"></div>
+            </div>
+            <span id="data-count" class="text-[10px] bg-blue-50 text-blue-600 px-3 py-1 rounded-full font-bold">同步中...</span>
+        </header>
+
+        <div id="card-container" class="space-y-5 text-center">
+            <div class="animate-pulse space-y-4">
+                <div class="h-32 bg-slate-200 rounded-[2.5rem]"></div>
+                <div class="h-32 bg-slate-200 rounded-[2.5rem]"></div>
+            </div>
+        </div>
+    </main>
+
+    <div class="fixed bottom-8 left-6 right-6 flex space-x-3 items-center">
+        <button onclick="location.reload()" class="bg-white p-5 rounded-[2rem] shadow-xl border border-slate-100 active:scale-90 transition-transform">
+            <svg class="w-6 h-6 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+        </button>
+        <button onclick="window.open('https://docs.qq.com/form/page/DWE9pVFphQ0VzeW5h', '_blank')" 
+                class="flex-1 bg-blue-600 text-white py-5 rounded-[2rem] font-bold shadow-2xl shadow-blue-300 flex items-center justify-center space-x-2 active:scale-95 transition-transform">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+            <span class="tracking-widest">我要建言</span>
+        </button>
+    </div>
+
+    <script>
+        // 配置：对应的【收集结果】表格ID
+        const SHEET_ID = 'DWFh5Z21OcFZtSmFK';
+        let allData = [];
+
+        async function initApp() {
+            try {
+                const response = await fetch(`https://docs.qq.com/d_util/v1/smartsheet/public_query?id=${SHEET_ID}`);
+                const result = await response.json();
+                
+                // 核心管理逻辑：只筛选“审核结果”为“已公示”的行
+                allData = result.data.rows.filter(row => {
+                    const statusCell = row.cells.find(c => c.field_name === '审核结果');
+                    return statusCell && statusCell.value === '已公示';
+                });
+
+                document.getElementById('data-count').innerText = `已精选 ${allData.length} 条`;
+                renderCards(allData);
+            } catch (e) {
+                console.error("Fetch Error:", e);
+                document.getElementById('card-container').innerHTML = '<p class="text-slate-400 text-sm mt-10">校内云端数据联调中...</p>';
+            }
+        }
+
+        function handleSearch() {
+            const query = document.getElementById('searchInput').value.toLowerCase();
+            const filtered = allData.filter(row => {
+                const searchStr = row.cells.map(c => (c.value || '').toString().toLowerCase()).join(' ');
+                return searchStr.includes(query);
+            });
+            renderCards(filtered);
+        }
+
+        function renderCards(data) {
+            const container = document.getElementById('card-container');
+            if (data.length === 0) {
+                container.innerHTML = '<p class="text-slate-300 text-sm mt-20">这里空空如也，等待管理员公示精选建言</p>';
+                return;
+            }
+
+            container.innerHTML = data.map(item => {
+                const getVal = (name) => item.cells.find(c => c.field_name === name)?.value || '暂无内容';
+                
+                return `
+                    <div class="card-gradient p-7 rounded-[2.5rem] border border-white shadow-sm shadow-blue-100/20 text-left">
+                        <div class="flex justify-between items-center mb-5">
+                            <span class="px-3 py-1 bg-white text-blue-600 text-[10px] font-extrabold rounded-full border border-blue-50 shadow-sm">
+                                ${getVal('建言分类')}
+                            </span>
+                            <div class="flex items-center space-x-1">
+                                <span class="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span>
+                                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">已通过审核</span>
+                            </div>
+                        </div>
+                        
+                        <h3 class="text-lg font-bold text-slate-800 leading-tight mb-3 tracking-tight">${getVal('建言标题')}</h3>
+                        <p class="text-slate-500 text-xs leading-relaxed mb-6 line-clamp-3">${getVal('现状详述')}</p>
+                        
+                        <div class="flex items-center justify-between pt-5 border-t border-slate-100/60">
+                            <span class="text-[10px] font-medium text-slate-300 italic">${getVal('提交时间') || '近期'}</span>
+                            <div class="flex -space-x-2">
+                                <div class="w-7 h-7 rounded-full border-2 border-white bg-blue-50 flex items-center justify-center text-[9px] font-bold text-blue-500 shadow-sm">师大</div>
+                                <div class="w-7 h-7 rounded-full border-2 border-white bg-slate-900 flex items-center justify-center text-[9px] font-bold text-white shadow-md">SU</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        initApp();
+    </script>
+</body>
+</html>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
