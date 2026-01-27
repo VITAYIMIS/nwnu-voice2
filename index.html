@@ -6,180 +6,146 @@
     <title>西北师范大学校学生会 | 倾听建言留言板</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        :root { --nwnu-blue: #003d74; --nwnu-gold: #b8976d; }
-        body { background-color: #f6f8fa; font-family: "PingFang SC", "Microsoft YaHei", sans-serif; color: #333; }
+        :root { --nwnu-blue: #003d74; }
+        body { background-color: #f2f4f7; font-family: "PingFang SC", "STHeiti", sans-serif; }
         
-        /* 官方政务质感导航 */
-        .gov-header {
-            background: white;
-            border-bottom: 3px solid var(--nwnu-blue);
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        /* 顶部政务蓝装饰 */
+        .header-top-border { border-top: 4px solid var(--nwnu-blue); }
+        
+        /* 导航切换：政务极简风 */
+        .tab-item { transition: all 0.3s ease; position: relative; }
+        .tab-item.active { color: var(--nwnu-blue); font-weight: 800; }
+        .tab-item.active::after {
+            content: ''; position: absolute; bottom: -8px; left: 20%; width: 60%;
+            height: 3px; background: var(--nwnu-blue); border-radius: 2px;
         }
 
-        /* 搜索框：内敛庄重 */
-        .gov-search {
-            background: #fff;
-            border: 1px solid #d1d9e0;
-            transition: all 0.3s ease;
-        }
-        .gov-search:focus {
-            border-color: var(--nwnu-blue);
-            box-shadow: 0 0 0 3px rgba(0,61,116,0.1);
-        }
+        /* 搜索框高级拟纸化 */
+        .search-container { box-shadow: 0 2px 15px rgba(0,0,0,0.05); }
 
-        /* 列表项卡片：规整对称 */
+        /* 政务卡片：左边框区分 */
         .gov-card {
-            background: white;
-            border-left: 4px solid #e2e8f0;
+            border-left: 5px solid #d1d5db;
             transition: all 0.2s ease;
         }
-        .gov-card:hover {
-            border-left-color: var(--nwnu-blue);
-            transform: translateX(2px);
-            background: #fafbfd;
-        }
+        .gov-card:hover { border-left-color: var(--nwnu-blue); background: #f9fafb; }
 
-        /* 状态标签 */
-        .status-badge {
-            font-size: 10px;
-            padding: 2px 8px;
-            border-radius: 2px;
-            font-weight: bold;
-            letter-spacing: 0.5px;
-        }
-
-        /* 底部固定区 */
-        .gov-footer {
-            background: linear-gradient(to top, #f6f8fa 70%, rgba(246,248,250,0));
-        }
-
-        /* 字体抗锯齿优化 */
-        .antialiased { -webkit-font-smoothing: antialiased; }
+        /* 底部操作区 */
+        .footer-blur { background: linear-gradient(to top, #f2f4f7 80%, transparent); }
     </style>
 </head>
-<body class="pb-32 antialiased">
+<body class="pb-32">
 
-    <header class="gov-header sticky top-0 z-50">
-        <div class="max-w-2xl mx-auto px-6 py-4 flex justify-between items-center">
-            <div class="flex items-center space-x-3">
-                <div class="h-10 w-1 px-0.5 bg-blue-900 opacity-20"></div>
+    <header class="bg-white header-top-border shadow-sm sticky top-0 z-50">
+        <div class="max-w-2xl mx-auto px-6 py-4">
+            <div class="flex items-center justify-between">
                 <div>
-                    <h1 class="text-lg font-bold text-slate-900 tracking-tight">倾听建言留言板</h1>
+                    <h1 class="text-xl font-bold text-slate-800 tracking-tight">倾听建言留言板</h1>
                     <p class="text-[9px] text-slate-400 font-bold uppercase tracking-[0.2em]">NWNU Student Union Public Portal</p>
                 </div>
+                <div class="text-[10px] font-bold text-blue-900 border-l-2 border-blue-900/20 pl-3">官方·数字化公示</div>
             </div>
-            <div class="text-right hidden sm:block">
-                <span class="text-[10px] text-blue-900 bg-blue-50 px-2 py-1 font-bold">西北师大校学生会</span>
+        </div>
+        
+        <div class="bg-white border-t border-slate-100 px-6 py-3 overflow-x-auto">
+            <div id="tab-container" class="max-w-2xl mx-auto flex space-x-8 whitespace-nowrap text-sm text-slate-500 font-medium">
+                <button onclick="switchTab('全部')" class="tab-item active">全部</button>
+                <button onclick="switchTab('衣食住行')" class="tab-item">衣食住行</button>
+                <button onclick="switchTab('求知问道')" class="tab-item">求知问道</button>
+                <button onclick="switchTab('校园角落')" class="tab-item">校园角落</button>
+                <button onclick="switchTab('学生权益')" class="tab-item">学生权益</button>
+                <button onclick="switchTab('综合建议')" class="tab-item">综合建议</button>
             </div>
         </div>
     </header>
 
-    <main class="max-w-2xl mx-auto px-6 mt-8">
-        
-        <section class="mb-10">
-            <div class="relative">
-                <input type="text" id="searchInput" oninput="handleSearch()" 
-                       placeholder="搜索公示结果、处理进度、关键词..." 
-                       class="gov-search w-full rounded-lg py-4 pl-12 pr-4 text-sm outline-none">
-                <span class="absolute left-4 top-4.5 text-slate-400">🔍</span>
-            </div>
-            <div class="mt-3 flex items-center justify-between px-1">
-                <div class="flex items-center space-x-2">
-                    <span id="status-dot" class="w-2 h-2 rounded-full bg-slate-300"></span>
-                    <span id="status-text" class="text-[10px] text-slate-400 font-bold uppercase tracking-widest">System Ready</span>
-                </div>
-                <div class="text-[10px] text-slate-300 italic">2026 数字化校园公示</div>
-            </div>
-        </section>
-
-        <div class="flex items-center space-x-2 mb-6 border-b border-slate-200 pb-2">
-            <h2 class="text-xl font-bold text-slate-800">最新公示</h2>
-            <span class="text-slate-300">/</span>
-            <span class="text-xs text-slate-400 font-medium">Public Feedback</span>
+    <main class="max-w-2xl mx-auto px-6 mt-6">
+        <div class="search-container relative mb-8">
+            <input type="text" id="searchInput" oninput="handleSearch()" 
+                   placeholder="搜索标题、内容或处理进度..." 
+                   class="w-full bg-white rounded-lg py-4 pl-12 pr-4 text-sm outline-none focus:ring-1 focus:ring-blue-900/10">
+            <span class="absolute left-4 top-4 text-slate-400 text-lg">🔍</span>
         </div>
 
         <div id="card-container" class="space-y-4">
-            <div class="p-10 text-center text-slate-400 text-sm italic">
-                正在加载官方公示数据...
-            </div>
+            <div class="h-32 bg-white rounded-lg animate-pulse"></div>
         </div>
     </main>
 
-    <footer class="fixed bottom-0 left-0 right-0 p-6 gov-footer z-[100]">
+    <footer class="fixed bottom-0 left-0 right-0 p-6 footer-blur z-50">
         <div class="max-w-2xl mx-auto">
             <button onclick="window.location.href='https://docs.qq.com/form/page/DWE9pVFphQ0VzeW5h'" 
-                    class="w-full bg-[#003d74] hover:bg-[#002d54] text-white py-4 rounded-md font-bold shadow-lg transition-all flex items-center justify-center space-x-3">
-                <span class="text-sm tracking-[0.3em]">我要反映情况 (进入建言通道)</span>
+                    class="w-full bg-[#003d74] text-white py-4 rounded font-bold shadow-lg flex items-center justify-center space-x-2 active:scale-[0.98] transition-transform">
+                <span class="tracking-[0.3em]">进入建言通道</span>
             </button>
-            <p class="text-center text-[9px] text-slate-400 mt-3 font-medium tracking-widest uppercase">
-                NWNU · Student Union · Excellence in Service
-            </p>
+            <p class="text-[8px] text-center text-slate-400 mt-4 font-bold tracking-widest uppercase">Northwest Normal University Student Union</p>
         </div>
     </footer>
 
     <script>
         const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTo4ZeX_dZKBzM0Tkq18GOEaqPYO75_AI0OLShfdUSkQ7pRE0DPxWIY6PZ932Nh7DMUYxe49i1oO9CM/pub?output=csv';
         let allItems = [];
+        let currentTab = '全部';
 
         async function init() {
-            const statusDot = document.getElementById('status-dot');
-            const statusText = document.getElementById('status-text');
-
             try {
                 const res = await fetch(CSV_URL);
-                if (!res.ok) throw new Error();
                 const csvData = await res.text();
-                
                 const rows = csvData.split('\n').slice(1); 
                 allItems = rows.map(row => {
                     const cols = row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
                     return {
-                        category: cols[0]?.replace(/"/g, '').trim(),
-                        title: cols[1]?.replace(/"/g, '').trim(),
-                        content: cols[2]?.replace(/"/g, '').trim(),
-                        status: cols[3]?.replace(/"/g, '').trim()
+                        category: cols[0]?.replace(/"/g, '').trim(), // 建言分类
+                        title: cols[1]?.replace(/"/g, '').trim(),    // 建言标题
+                        content: cols[2]?.replace(/"/g, '').trim(),  // 内容
+                        status: cols[3]?.replace(/"/g, '').trim()    // 进度
                     };
-                }).filter(item => item.title && (item.status === '已立项' || item.status === '已公示' || item.status === '处理中'));
+                }).filter(item => item.title && (item.status === '已立项' || item.status === '已公示'));
 
-                statusDot.className = "w-2 h-2 rounded-full bg-green-600 shadow-[0_0_5px_rgba(22,101,52,0.4)]";
-                statusText.innerText = "Data Synced Successfully";
-                
-                render(allItems);
-            } catch (err) {
-                statusDot.className = "w-2 h-2 rounded-full bg-red-600";
-                statusText.innerText = "Sync Failed";
-            }
+                render();
+            } catch (err) { console.error("数据加载失败"); }
         }
 
-        function handleSearch() {
-            const k = document.getElementById('searchInput').value.toLowerCase().trim();
-            const filtered = allItems.filter(i => 
-                i.title.toLowerCase().includes(k) || 
-                i.content.toLowerCase().includes(k) || 
-                i.category.toLowerCase().includes(k)
-            );
-            render(filtered);
+        // 分类切换逻辑
+        function switchTab(tabName) {
+            currentTab = tabName;
+            // 更新 UI 样式
+            const tabs = document.querySelectorAll('.tab-item');
+            tabs.forEach(t => t.innerText === tabName ? t.classList.add('active') : t.classList.remove('active'));
+            render();
         }
 
-        function render(data) {
+        // 搜索逻辑
+        function handleSearch() { render(); }
+
+        function render() {
             const container = document.getElementById('card-container');
-            if (data.length === 0) {
-                container.innerHTML = `<div class="py-20 text-center text-slate-300 text-sm">暂无符合条件的公示记录</div>`;
+            const keyword = document.getElementById('searchInput').value.toLowerCase();
+            
+            const filtered = allItems.filter(item => {
+                const matchesTab = currentTab === '全部' || item.category === currentTab;
+                const matchesKey = item.title.toLowerCase().includes(keyword) || item.content.toLowerCase().includes(keyword);
+                return matchesTab && matchesKey;
+            });
+
+            if (filtered.length === 0) {
+                container.innerHTML = `<div class="py-20 text-center text-slate-300 text-sm italic tracking-widest leading-loose">暂无相关公示内容<br>西北师大校学生会竭诚为您服务</div>`;
                 return;
             }
-            container.innerHTML = data.map(item => `
-                <div class="gov-card p-6 shadow-sm">
+
+            container.innerHTML = filtered.map(item => `
+                <div class="gov-card bg-white p-6 shadow-sm">
                     <div class="flex justify-between items-start mb-4">
-                        <span class="text-[10px] font-bold text-blue-900 border border-blue-900/20 bg-blue-50 px-2 py-0.5">${item.category}</span>
-                        <span class="status-badge ${item.status === '已立项' ? 'bg-amber-100 text-amber-700' : 'bg-green-100 text-green-700'}">
-                            ${item.status}
+                        <span class="text-[10px] font-bold text-blue-900 bg-blue-50 px-2 py-0.5 border border-blue-900/10">${item.category}</span>
+                        <span class="text-[10px] font-bold ${item.status === '已立项' ? 'text-amber-600 bg-amber-50' : 'text-green-600 bg-green-50'} px-2 py-0.5 uppercase tracking-wider italic">
+                            ● ${item.status}
                         </span>
                     </div>
                     <h3 class="font-bold text-slate-800 text-base mb-2 leading-tight">${item.title}</h3>
-                    <p class="text-slate-500 text-[12px] leading-relaxed mb-4">${item.content}</p>
-                    <div class="pt-4 border-t border-slate-100 flex justify-between items-center text-[9px] font-bold text-slate-300 tracking-[0.2em] uppercase">
-                        <span>西北师范大学校学生会</span>
-                        <span>官方公示库</span>
+                    <p class="text-slate-500 text-[12px] leading-relaxed mb-6">${item.content}</p>
+                    <div class="pt-4 border-t border-slate-50 flex justify-between items-center text-[8px] text-slate-300 font-bold uppercase tracking-[0.2em]">
+                        <span>官方档案库 OFFICIAL ARCHIVE</span>
+                        <span class="italic font-black">NWNU SU</span>
                     </div>
                 </div>
             `).join('');
